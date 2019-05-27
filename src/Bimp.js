@@ -1,98 +1,101 @@
-class Bimp{
+import P5Instance from './P5Instance';
 
-    p = null;
+const bimp = (isEnemy, width, height) => {
+    const p = P5Instance.p5;
+    const speed = 3;
+    const knockback = 35;
 
-    isEnemy = false;
+    let x = 0;
+    let y = 0;
 
+    let xv = 0;
+    let yv = 0;
 
-    speed = 3;
-    knockback = 35;
+    let w = width;
+    let h = height;
 
-    x = 0;
-    y = 0;
+    let lerpX = 0;
+    let lerpY = 0;
 
-    xv = 0;
-    yv = 0;
+    let xvDelta = 0;
+    let yvDelta = 0;
 
-    w = 0;
-    h = 0;
-
-    lerpX = this.x;
-    lerpY = this.y;
-
-    xvDelta = 0;
-    yvDelta = 0;
-
-    constructor(p, isEnemy = false, width = 50, height = 50) {
-        this.p = p;
-        this.w = width;
-        this.h = height;
-        this.isEnemy = isEnemy;
-        if(this.isEnemy) {
-            this.x = this.p.random(-p.width / 2, p.width / 2);
-            this.y = this.p.random(-p.height / 2, p.height / 2);
-            this.lerpX = this.x;
-            this.lerpY = this.y;
-            console.log(`enemy x: ${this.x}; y: ${this.y}`);
-        }
+    if (isEnemy) {
+        x = p.random(-p.width / 2, p.width / 2);
+        y = p.random(-p.height / 2, p.height / 2);
+        lerpX = x;
+        lerpY = y;
     }
 
-    controlAi(mainBimp) {
-        let dir = -Math.atan2(this.lerpX - mainBimp.lerpX, this.lerpY - mainBimp.lerpY) - Math.PI / 2;
-        this.p.strokeWeight(5);
-        this.p.stroke(255, 0, 0);
+    const controlAi = mainBimp => {
+        let dir = -Math.atan2(lerpX - mainBimp.lerpX, lerpY - mainBimp.lerpY) - Math.PI / 2;
+        p.strokeWeight(5);
+        p.stroke(255, 0, 0);
 
-        this.xvDelta += ((Math.cos(dir) * 3) - this.xvDelta) / 5;
-        this.yvDelta += ((Math.sin(dir) * 3) - this.yvDelta) / 5;
+        xvDelta += ((Math.cos(dir) * 3) - xvDelta) / 5;
+        yvDelta += ((Math.sin(dir) * 3) - yvDelta) / 5;
 
-        this.xv += this.xvDelta;
-        this.yv += this.yvDelta;
+        xv += xvDelta;
+        yv += yvDelta;
     };
 
-    draw(mainBimp = null) {
-        if(this.isEnemy) {
-            this.p.fill(0, 0, 155);
+    const draw = mainBimp => {
+        if (isEnemy) {
+            p.fill(0, 0, 155);
         } else {
-            this.p.fill(0);
+            p.fill(0);
         }
 
-        this.p.noStroke();
-        this.p.rect(this.lerpX - this.w / 2, this.lerpY - this.h / 2, this.w, this.h, 10, 10, 10, 10);
+        p.noStroke();
+        p.rect(lerpX - w / 2, lerpY - h / 2, w, h, 10, 10, 10, 10);
 
-        if(!this.isEnemy) {
-            if (this.p.keyIsDown(this.p.RIGHT_ARROW)) this.xv += this.speed; // right
-            if (this.p.keyIsDown(this.p.LEFT_ARROW)) this.xv -= this.speed; // left
-            if (this.p.keyIsDown(this.p.UP_ARROW)) this.yv -= this.speed; // up
-            if (this.p.keyIsDown(this.p.DOWN_ARROW)) this.yv += this.speed; // down
-        } else if(mainBimp) { //this is an enemy controlled by AI
-            this.controlAi(mainBimp);
+        if (!isEnemy) {
+            if (p.keyIsDown(p.RIGHT_ARROW)) xv += speed; // right
+            if (p.keyIsDown(p.LEFT_ARROW)) xv -= speed; // left
+            if (p.keyIsDown(p.UP_ARROW)) yv -= speed; // up
+            if (p.keyIsDown(p.DOWN_ARROW)) yv += speed; // down
+        } else if (mainBimp) { //this is an enemy controlled by AI
+            controlAi(mainBimp);
         }
 
+        xv *= 0.9;
+        yv *= 0.9;
 
-        this.xv *= 0.9;
-        this.yv *= 0.9;
+        x += xv;
+        y += yv;
 
-        this.x += this.xv;
-        this.y += this.yv;
+        lerpX += (x - lerpX) / 5;
+        lerpY += (y - lerpY) / 5;
 
-        this.lerpX += (this.x - this.lerpX) / 5;
-        this.lerpY += (this.y - this.lerpY) / 5;
+        if (lerpX > (p.width / 2) - w / 2) xv = -knockback;
+        if (lerpX < 0 - p.width / 2 + w / 2) xv = knockback;
+        if (lerpY > p.height / 2 - h / 2) yv = -knockback;
+        if (lerpY < 0 - p.height / 2 + h / 2) yv = knockback;
+    };
 
-        if(this.lerpX > (this.p.width / 2) - this.w / 2) {
-            this.xv = -this.knockback;
+    return {
+        get x() { return x; },
+        set x(value) { x = value; },
+
+        get y() { return y; },
+        set y(value) { y = value; },
+
+        get xv() { return xv; },
+        set xv(value) { xv = value; },
+
+        get yv() { return yv; },
+        set yv(value) { yv = value; },
+
+        get lerpX() { return lerpX; },
+        set lerpX(value) { lerpX = value; },
+
+        get lerpY() { return lerpY; },
+        set lerpY(value) { lerpY = value; },
+
+        draw(mainBimp) {
+            draw(mainBimp);
         }
-        if(this.lerpX < 0 - this.p.width / 2 + this.w / 2) {
-            this.xv = this.knockback;
-        }
-        if(this.lerpY > this.p.height / 2 - this.h / 2) {
-            this.yv = -this.knockback;
-        }
-        if(this.lerpY < 0 - this.p.height / 2 + this.h / 2) {
-            this.yv = this.knockback;
-        }
-    }
-}
+    };
+};
 
-
-
-export default Bimp;
+export const createBimp = (isEnemy = false, width = 50, height = 50) => bimp(isEnemy, width, height);
